@@ -1,7 +1,8 @@
 import undetected_chromedriver as uc
 from pathlib import Path
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import time
 import jsonlines
 
@@ -19,134 +20,53 @@ def init_driver(page, signed_in=True):
     driver.maximize_window()
     
     return driver
-    
-def scroll(swiper_wrapper, next):
-    users = set()
-
-    while True:
-        users.update(str(user.text[4:]) for user in swiper_wrapper.find_elements(By.CLASS_NAME, 'truncate'))
-        try:
-            next.click()
-        except:
-            break
-    
-    users.update(str(user.text[4:]) for user in swiper_wrapper.find_elements(By.CLASS_NAME, 'truncate'))
-    users.update(str(user.text[4:]) for user in swiper_wrapper.find_elements(By.CLASS_NAME, 'truncate'))
-    users.update(str(user.text[4:]) for user in swiper_wrapper.find_elements(By.CLASS_NAME, 'truncate'))
-    users.update(str(user.text[4:]) for user in swiper_wrapper.find_elements(By.CLASS_NAME, 'truncate'))
-    
-    return users
 
 def homepage():
 
     driver = init_driver("https://character.ai/")
 
-    # Start building the set of profiles to explore from the featured, popular, trending, and category tabs
-    user_list = set()
+    # Start building the set of usernames to visit from the featured, popular, trending, and category tabs
+    username_set = set()
 
     # Featured
-    featured = driver.find_elements(By.XPATH, '/html/body/div[1]/div/main/div/div/div/main/div/div[1]/ol/div/li[2]/div/div[2]/div/div[1]/child::*')
+    featured = driver.find_elements(By.XPATH, '/html/body/div[1]/div/main/div/div/div/main/div/div[1]/ol/div/li[2]/div/div[2]/div/div[1]/child::*/a/div/div/div/div/div/div[1]/div')
 
-    for slide in featured:
-        print(str(slide.find_element(By.XPATH, './a/div/div/div/div/div/div[1]/div').get_attribute("textContent")))
+    for username in featured:
+        username_set.add(str(username.get_attribute("textContent"))[4:])
 
-    # /html/body/div[1]/div/main/div/div/div/main/div/div[1]/ol/div/li[2]/div/div[2]/div/div[1]
-    # /html/body/div[1]/div/main/div/div/div/main/div/div[1]/ol/div/li[2]/div/div[2]/div/div[1]/div[1]/a/div/div/div/div/div/div[1]/div
-    # /html/body/div[1]/div/main/div/div/div/main/div/div[1]/ol/div/li[2]/div/div[2]/div/div[1]/div[19]/a/div/div/div/div/div/div[1]/div
-    # /html/body/div[1]/div/main/div/div/div/main/div/div[1]/ol/div/li[2]/div/div[2]/div/div[1]/div[14]/a/div/div/div/div/div/div[1]/div
+    # Popular
+    popular = driver.find_elements(By.XPATH, '/html/body/div[1]/div/main/div/div/div/main/div/div[1]/ol/div/li[3]/div/div[2]/div/div[1]/child::*/a/div/div/div/div/div/div[1]/div')
 
-    # featured_next = driver.find_element(By.XPATH, '/html/body/div[1]/div/main/div/div/div/main/div/div[1]/ol/div/li[2]/div/div[2]/div/div[3]')
-    # user_list.update(scroll(featured, featured_next))
+    for username in popular:
+        username_set.add(str(username.get_attribute("textContent"))[4:])
 
-    # # For You
-    # for_you = driver.find_element(By.XPATH, '/html/body/div/div/div/main/div/div/main/div/div/div[1]/ol/div/li[1]/div/div[2]/div/div[1]')
-    # fy_next = driver.find_element(By.XPATH, '/html/body/div/div/div/main/div/div/main/div/div/div[1]/ol/div/li[1]/div/div[2]/div/div[3]')
-    # user_list.update(scroll(for_you, fy_next))
+    # Trending
+    trending = driver.find_elements(By.XPATH, '/html/body/div[1]/div/main/div/div/div/main/div/div[1]/ol/div/li[4]/div/div[2]/div/div[1]/child::*/a/div/div/div/div/div/div[1]/div')
 
-    # # Featured
-    # featured = driver.find_element(By.XPATH, '/html/body/div/div/div/main/div/div/main/div/div/div[1]/ol/div/li[2]/div/div[2]/div/div[1]')
-    # featured_next = driver.find_element(By.XPATH, '/html/body/div/div/div/main/div/div/main/div/div/div[1]/ol/div/li[2]/div/div[2]/div/div[3]')
-    # user_list.update(scroll(featured, featured_next))
+    for username in trending:
+        username_set.add(str(username.get_attribute("textContent"))[4:])
 
-    # # Categories
-    # category_swiper = driver.find_element(By.XPATH, '/html/body/div/div/div/main/div/div/main/div/div/div[1]/ol/div/div[3]/div[1]/div/div[1]')
+    # Categories
+    category_buttons = driver.find_elements(By.XPATH, '/html/body/div[1]/div/main/div/div/div/main/div/div[1]/ol/div/div[4]/div[1]/div/div[1]/child::*/button')
+    next_category_button = driver.find_element(By.XPATH, '/html/body/div[1]/div/main/div/div/div/main/div/div[1]/ol/div/div[4]/div[1]/div/div[3]')
 
-    # explored_categories = set()
-    # while True:
+    for category_button in category_buttons:
+        while True:
+            try:
+                category_button.click()
+                break
+            except:
+                next_category_button.click()
         
-    #     try:
-    #         cat_name = 'Philosophy'
+        category = WebDriverWait(driver, 20).until(EC.presence_of_all_elements_located((By.XPATH, '/html/body/div[1]/div/main/div/div/div/main/div/div[1]/ol/div/div[4]/child::*/li/div/div[2]/div/div[1]/child::*/a/div/div/div/div/div/div[1]/div')))
 
-    #         for cat in category_swiper.find_elements(By.CLASS_NAME, 'swiper-slide-fully-visible'):
-    #             if cat not in explored_categories:
-
-    #                 cat.click()
-    #                 cat_name = str(cat.text)
-                    
-    #                 # Find the next button
-    #                 while True:
-    #                     try:
-    #                         cat_char_next = driver.find_element(By.XPATH, '/html/body/div/div/div/main/div/div/main/div/div/div[1]/ol/div/div[3]/div[@*]/li/div/div[2]/div/div[3]')
-    #                         break
-    #                     except:
-    #                         continue
-                        
-    #                 # Find the wrapper
-    #                 while True:
-    #                     try:
-    #                         wrap = driver.find_element(By.XPATH, '/html/body/div/div/div/main/div/div/main/div/div/div[1]/ol/div/div[3]/div[@*]/li/div/div[2]/div/div[1]')
-    #                         break
-    #                     except:
-    #                         continue
-    #                 actions = ActionChains(driver)
-    #                 actions.move_to_element(wrap).perform()
-
-    #                 user_list.update(scroll(wrap, cat_char_next))
-
-    #                 explored_categories.add(cat)
-
-    #         if cat_name == 'Philosophy':
-    #             # Click the Politics button
-    #             driver.find_element(By.XPATH, '/html/body/div/div/div/main/div/div/main/div/div/div[1]/ol/div/div[3]/div[1]/div/div[1]/div[16]/button').click()
-
-    #             # Find the next button
-    #             while True:
-    #                 try:
-    #                     cat_char_next = driver.find_element(By.XPATH, '/html/body/div/div/div/main/div/div/main/div/div/div[1]/ol/div/div[3]/div[@*]/li/div/div[2]/div/div[3]')
-    #                     break
-    #                 except:
-    #                     continue
-                    
-    #             # Find the wrapper
-    #             while True:
-    #                 try:
-    #                     wrap = driver.find_element(By.XPATH, '/html/body/div/div/div/main/div/div/main/div/div/div[1]/ol/div/div[3]/div[@*]/li/div/div[2]/div/div[1]')
-    #                     break
-    #                 except:
-    #                     continue
-    #             actions = ActionChains(driver)
-    #             actions.move_to_element(wrap).perform()
-                
-    #             user_list.update(scroll(wrap, cat_char_next))
-
-    #             break
-
-    #     except:
-    #         pass
-
-    #     finally:
-    #         try:
-    #             # Click next to see more categories
-    #             driver.find_element(By.XPATH, '/html/body/div/div/div/main/div/div/main/div/div/div[1]/ol/div/div[3]/div[1]/div/div[3]').click()
-    #         except:
-    #             pass
-
-    # driver.quit()
-    # user_list.discard('')
-
-    # with jsonlines.open('homepage.jsonl', mode='w') as writer:
-    #     for user in user_list:
-    #         writer.write(user)
+        for username in category:
+            username_set.add(str(username.get_attribute("textContent"))[4:])
+    
+    data_file_path = str(Path(__file__).parent.parent / "data" / "usernames.txt")
+    with open(data_file_path, mode="w") as writer:
+        for username in username_set:
+            writer.write(username + "\n")
 
     return
 
