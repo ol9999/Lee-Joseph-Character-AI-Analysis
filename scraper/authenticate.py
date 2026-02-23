@@ -1,7 +1,7 @@
 import undetected_chromedriver as uc
 from pathlib import Path
-import time
 import os
+import time
 
 dataset_path = str(Path(__file__).parent.parent / "data")
 
