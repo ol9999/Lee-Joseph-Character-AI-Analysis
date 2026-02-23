@@ -1,10 +1,8 @@
 import undetected_chromedriver as uc
-from pathlib import Path
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import time
-import jsonlines
+from pathlib import Path
 
 def init_driver(page, signed_in=True):
     chrome_options = uc.ChromeOptions()
@@ -63,7 +61,7 @@ def homepage():
         for username in category:
             username_set.add(str(username.get_attribute("textContent"))[4:])
     
-    data_file_path = str(Path(__file__).parent.parent / "data" / "usernames.txt")
+    data_file_path = str(Path(__file__).parent.parent / "data" / "homepage.txt")
     with open(data_file_path, mode="w") as writer:
         for username in username_set:
             writer.write(username + "\n")
