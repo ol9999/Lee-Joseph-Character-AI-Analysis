@@ -2,6 +2,7 @@ import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+import chrome_version
 from pathlib import Path
 
 def init_driver(page, signed_in=True):
@@ -11,7 +12,8 @@ def init_driver(page, signed_in=True):
         browser_data_path = str(Path(__file__).parent / "browser_data")
         chrome_options.add_argument("--user-data-dir=" + browser_data_path)
     
-    driver = uc.Chrome(use_subprocess=True, options=chrome_options)
+    chrome_version_number = int(chrome_version.get_chrome_version().split(".")[0])
+    driver = uc.Chrome(use_subprocess=True, options=chrome_options, version_main=chrome_version_number)
     
     # Launch page
     driver.get(page)

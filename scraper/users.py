@@ -1,5 +1,6 @@
 import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
+import chrome_version
 from pathlib import Path
 import os
 import sys
@@ -12,7 +13,8 @@ def init_driver(page, signed_in=True):
         browser_data_path = str(Path(__file__).parent / "browser_data")
         chrome_options.add_argument("--user-data-dir=" + browser_data_path)
     
-    driver = uc.Chrome(use_subprocess=True, options=chrome_options)
+    chrome_version_number = int(chrome_version.get_chrome_version().split(".")[0])
+    driver = uc.Chrome(use_subprocess=True, options=chrome_options, version_main=chrome_version_number)
     
     # Launch page
     driver.get(page)
@@ -31,10 +33,7 @@ def string_to_int(number):
     else:
         return int(number)
 
-def get_usernames():
-    
-    # The number for the intermediate files we will be using
-    x = sys.argv[1]
+def get_usernames(x):
 
     # The set of users we have already visited
     visited = set()
@@ -62,6 +61,9 @@ def get_usernames():
         with open(usernames_path) as reader:
             for line in reader:
                 usernames.add(line.strip())
+    else:
+        print(f"Cannot find the file {usernames_path}. Did you pass the correct number to the script?")
+        raise Exception
     
     # Remove usernames we have already visited
     usernames -= visited
@@ -137,8 +139,11 @@ def scrape_user(driver):
     return user_data
 
 def scrape_users():
+
+    # The number for the intermediate files we will be using
+    x = sys.argv[1]
     
-    usernames = get_usernames()
+    usernames = get_usernames(x)
 
     driver = init_driver("https://character.ai")
 
@@ -148,16 +153,22 @@ def scrape_users():
 
         user_data = scrape_user(driver)
 
+        # If this user is missing, document that and move on
         if type(user_data) != dict:
-            print(f"user {username} does not exist")
+            missing_users_path = str(Path(__file__).parent.parent / "data" / f"missing_users_{x}.txt")
+            with open(missing_users_path, mode="a") as writer:
+                writer.write(username + "\n")
             continue
 
-        user_data["username"] = username
-
-        print(f"User {username} is following {user_data['following_count']} accounts")
-
-        # Check if dne
-
-        # write to file
+        # Save this user's data to the file
+        users_jsonl_path = str(Path(__file__).parent.parent / "data" / f"users_{x}.jsonl")
+        with jsonlines.open(users_jsonl_path, mode="a") as writer:
+            line = [
+                username,
+                user_data["following_count"],
+                list(user_data["characters"]),
+                list(user_data["following"])
+            ]
+            writer.write(line)
 
 scrape_users()
