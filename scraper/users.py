@@ -89,7 +89,7 @@ def scrape_user_characters(driver):
 
     return characters_set
 
-def scrape_user_following(driver):
+def scrape_user_following(driver, max_following=10000):
     
     # Find the following button. This might be under the second or third div on their profile because they may or may not have a display name that is different from their username.
     following_button = driver.find_element(By.XPATH, '/html/body/div[1]/div/main/div/div/div/main/div/child::*/div/button[2]')
@@ -97,15 +97,29 @@ def scrape_user_following(driver):
     # Calculate number of followers
     following_count = string_to_int(str(following_button.text).removesuffix(" Following"))
 
-    # If 0, return empty set, 0
+    if following_count == 0:
+        return set(), 0
 
-    # Click the following button
+    following_button.click()
 
-    # Scroll
+    scrollable_div = driver.find_element(By.XPATH, '//*[@id="scrollableDiv"]/div/div')
 
-    # When done scrolling, return set of all users followed, num following
-    
-    return set(), following_count
+    # Scroll until you hit the bottom or reach the maximum number of following per user. I set this to 10k because the scraper gets extremely slow the longer it scrolls down the following list.
+    while True:
+        try:
+            scrollable_div.find_element(By.XPATH, f'a[{min(following_count, max_following)}]')
+            break
+        except:
+            driver.execute_script("document.querySelector('#scrollableDiv').scrollBy(0,1000)")
+
+    # Get all of this user's following
+    following_list = scrollable_div.find_elements(By.XPATH, 'child::a/div[2]/p[1]')
+
+    following_set = set()
+    for user in following_list:
+        following_set.add(str(user.text))
+
+    return following_set, following_count
 
 def scrape_user(driver):
     
