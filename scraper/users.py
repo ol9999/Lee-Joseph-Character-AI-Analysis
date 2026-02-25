@@ -20,6 +20,17 @@ def init_driver(page, signed_in=True):
     
     return driver
 
+def string_to_int(number):
+    
+    number = number.replace(",", "")
+
+    order_of_magnitude = number[-1]
+
+    if order_of_magnitude == "k":
+        return int(float(number[:-1]) * 1000)
+    else:
+        return int(number)
+
 def get_usernames():
     
     # The number for the intermediate files we will be using
@@ -59,16 +70,7 @@ def get_usernames():
 
 def scrape_user_characters(driver):
 
-# With bio and multiple characters
-# /html/body/div[1]/div/main/div/div/div/main/div/div[6]/div/div[2]/div/a[1]
-
-# No bio, no characters
-# /html/body/div[1]/div/main/div/div/div/main/div/div[5]/div/div[2]/span
-
-# No bio, some characters
-# /html/body/div[1]/div/main/div/div/div/main/div/div[5]/div/div[2]/div/a[1]
-
-    # Because some users don't have a bio, the index of the character list varies. However, it is always the last element on the profile. Also, if the try statement fails, that means the user does not exist.
+    # Because some users don't have a bio, the index of the character list varies. However, it is always the last element on the profile. Also, if the try statement fails, that means the user does not exist, so return None.
     try:
         last_element_on_profile = driver.find_elements(By.XPATH, '/html/body/div[1]/div/main/div/div/div/main/div/div')[-1]
     except:
@@ -87,7 +89,25 @@ def scrape_user_characters(driver):
 
     return characters_set
 
-def scrape_user(driver, username):
+def scrape_user_following(driver):
+    
+    # Find the following button. This might be under the second or third div on their profile because they may or may not have a display name that is different from their username.
+    following_button = driver.find_element(By.XPATH, '/html/body/div[1]/div/main/div/div/div/main/div/child::*/div/button[2]')
+
+    # Calculate number of followers
+    following_count = string_to_int(str(following_button.text).removesuffix(" Following"))
+
+    # If 0, return empty set, 0
+
+    # Click the following button
+
+    # Scroll
+
+    # When done scrolling, return set of all users followed, num following
+    
+    return set(), following_count
+
+def scrape_user(driver):
     
     user_data = {}
 
@@ -97,6 +117,8 @@ def scrape_user(driver, username):
         return None
     
     user_data["characters"] = characters
+
+    user_data["following"], user_data["following_count"] = scrape_user_following(driver)
 
     return user_data
 
@@ -110,7 +132,7 @@ def scrape_users():
         
         driver.get(f"https://character.ai/profile/{username}")
 
-        user_data = scrape_user(driver, username)
+        user_data = scrape_user(driver)
 
         if type(user_data) != dict:
             print(f"user {username} does not exist")
@@ -118,7 +140,7 @@ def scrape_users():
 
         user_data["username"] = username
 
-        print(user_data)
+        print(f"User {username} is following {user_data['following_count']} accounts")
 
         # Check if dne
 
