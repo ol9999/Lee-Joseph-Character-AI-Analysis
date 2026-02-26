@@ -51,3 +51,9 @@ new_missing_users -= old_missing_users
 with open(all_missing_users_path, mode="a") as writer:
     for username in new_missing_users:
         writer.write(username + "\n")
+
+scraped_users = old_users | new_users.keys()
+scraped_users_path = str(Path(__file__).parent.parent / "data" / "scraped_users.txt")
+with open(scraped_users_path, mode="w") as writer:
+    for username in scraped_users:
+        writer.write(username + "\n")

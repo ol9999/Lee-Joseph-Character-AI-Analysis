@@ -41,6 +41,13 @@ def get_usernames(x, snowball=False):
     visited = set()
 
     # Add scraped users to visited set
+    scraped_users_path = str(Path(__file__).parent.parent / "data" / "scraped_users.txt")
+    if os.path.exists(scraped_users_path):
+        with open(scraped_users_path) as reader:
+            for line in reader:
+                visited.add(line.strip())
+
+    # Add this iteration of scraped users to visited set
     users_jsonl_path = str(Path(__file__).parent.parent / "data" / f"users_{x}.jsonl")
     if os.path.exists(users_jsonl_path):
         with jsonlines.open(users_jsonl_path) as reader:
