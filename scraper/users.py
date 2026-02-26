@@ -134,7 +134,11 @@ def scrape_user(driver):
     
     user_data["characters"] = characters
 
+    # Collects the user's following and following count
     user_data["following"], user_data["following_count"] = scrape_user_following(driver)
+
+    # Collects the user's display name, which may or may not be the same as their username.
+    user_data["display_name"] = str(driver.find_element(By.XPATH, '//*[@id="main-content"]/div/div[1]').text)
 
     return user_data
 
@@ -165,6 +169,7 @@ def scrape_users():
         with jsonlines.open(users_jsonl_path, mode="a") as writer:
             line = [
                 username,
+                user_data["display_name"],
                 user_data["following_count"],
                 list(user_data["characters"]),
                 list(user_data["following"])
