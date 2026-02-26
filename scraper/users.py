@@ -35,7 +35,7 @@ def string_to_int(number):
     else:
         return int(number)
 
-def get_usernames(x):
+def get_usernames(x, snowball=False):
 
     # The set of users we have already visited
     visited = set()
@@ -67,10 +67,16 @@ def get_usernames(x):
         print(f"Cannot find the file {usernames_path}. Did you pass the correct number to the script?")
         raise Exception
     
+    # If snowball, add unvisited users from users' followings
+    if snowball and os.path.exists(users_jsonl_path):
+        with jsonlines.open(users_jsonl_path) as reader:
+            for line in reader:
+                usernames.update(set(line[-1]))
+    
     # Remove usernames we have already visited
     usernames -= visited
 
-    return usernames
+    return usernames, visited
 
 def scrape_user_characters(driver):
 
@@ -166,13 +172,19 @@ def scrape_users():
 
     # The number for the intermediate files we will be using
     x = sys.argv[1]
+
+    # Whether we will continue scraping users beyond our initial list
+    snowball = (len(sys.argv) == 3) and (sys.argv[2] == "snowball")
     
-    usernames = get_usernames(x)
+    usernames, visited = get_usernames(x, snowball)
 
     driver = init_driver("https://character.ai")
 
-    for username in usernames:
+    while len(usernames) > 0:
         
+        username = usernames.pop()
+        visited.add(username)
+
         driver.get(f"https://character.ai/profile/{username}")
 
         user_data = scrape_user(driver)
@@ -183,6 +195,9 @@ def scrape_users():
             with open(missing_users_path, mode="a") as writer:
                 writer.write(username + "\n")
             continue
+
+        if snowball:
+            usernames.update(user_data["following"] - visited)
 
         # Save this user's data to the file
         users_jsonl_path = str(Path(__file__).parent.parent / "data" / f"users_{x}.jsonl")
