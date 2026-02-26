@@ -46,7 +46,7 @@ for i, username in enumerate(usernames):
 
 # Write each bin to a file
 for x in range(n):
-    bin_path = str(Path(__file__).parent.parent / "data" / f"usernames_{str(x)}.txt")
+    bin_path = str(Path(__file__).parent.parent / "data" / f"usernames_{x}.txt")
     with open(bin_path, mode="w") as writer:
         for username in bins[x]:
             writer.write(username + "\n")

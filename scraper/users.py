@@ -41,6 +41,13 @@ def get_usernames(x, snowball=False):
     visited = set()
 
     # Add scraped users to visited set
+    scraped_users_path = str(Path(__file__).parent.parent / "data" / "scraped_users.txt")
+    if os.path.exists(scraped_users_path):
+        with open(scraped_users_path) as reader:
+            for line in reader:
+                visited.add(line.strip())
+
+    # Add this iteration of scraped users to visited set
     users_jsonl_path = str(Path(__file__).parent.parent / "data" / f"users_{x}.jsonl")
     if os.path.exists(users_jsonl_path):
         with jsonlines.open(users_jsonl_path) as reader:
@@ -48,9 +55,16 @@ def get_usernames(x, snowball=False):
                 visited.add(line[0])
 
     # Add missing users to visited set
-    missing_users_path = str(Path(__file__).parent.parent / "data" / f"missing_users_{x}.txt")
-    if os.path.exists(missing_users_path):
-        with open(missing_users_path) as reader:
+    all_missing_users_path = str(Path(__file__).parent.parent / "data" / f"missing_users.txt")
+    if os.path.exists(all_missing_users_path):
+        with open(all_missing_users_path) as reader:
+            for line in reader:
+                visited.add(line.strip())
+
+    # Add this iteration of missing users to visited set
+    new_missing_users_path = str(Path(__file__).parent.parent / "data" / f"missing_users_{x}.txt")
+    if os.path.exists(new_missing_users_path):
+        with open(new_missing_users_path) as reader:
             for line in reader:
                 visited.add(line.strip())
 
@@ -67,7 +81,7 @@ def get_usernames(x, snowball=False):
         print(f"Cannot find the file {usernames_path}. Did you pass the correct number to the script?")
         raise Exception
     
-    # If snowball, add unvisited users from users' followings
+    # If snowball, add usernames from following section of scraped users
     if snowball and os.path.exists(users_jsonl_path):
         with jsonlines.open(users_jsonl_path) as reader:
             for line in reader:
@@ -191,8 +205,8 @@ def scrape_users():
 
         # If this user is missing, document that and move on
         if type(user_data) != dict:
-            missing_users_path = str(Path(__file__).parent.parent / "data" / f"missing_users_{x}.txt")
-            with open(missing_users_path, mode="a") as writer:
+            new_missing_users_path = str(Path(__file__).parent.parent / "data" / f"missing_users_{x}.txt")
+            with open(new_missing_users_path, mode="a") as writer:
                 writer.write(username + "\n")
             continue
 
