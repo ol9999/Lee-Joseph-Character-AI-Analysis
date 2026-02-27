@@ -65,6 +65,10 @@ def scrape_character(driver):
     
     character_data = {}
 
+    # Set description and definition to None by default
+    character_data["description"] = None
+    character_data["definition"] = None
+
     # Checks for the flag and 3 dots buttons on the right side panel
     buttons = WebDriverWait(driver, 20).until(EC.presence_of_all_elements_located((By.XPATH, '//*[@id="chat-details"]/div[2]/div[2]/child::button')))
 
@@ -72,6 +76,22 @@ def scrape_character(driver):
     if len(buttons) == 2:
         buttons[1].click()
         WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, '/html/body/div[3]/div/div/button'))).click()
+
+        # The html elements for the description and definition
+        details = driver.find_elements(By.XPATH, '/html/body/div[4]/div/child::div')
+
+        # Wait until the description and/or definition load
+        WebDriverWait(details[-1], 20).until(EC.any_of(
+            EC.text_to_be_present_in_element((By.XPATH, 'div/p'), "Description"),
+            EC.text_to_be_present_in_element((By.XPATH, 'div/p'), "Definition")
+        ))
+
+        for detail in details:
+            detail_title = str(detail.find_element(By.XPATH, 'div/p').text).lower()
+            detail_body = str(detail.find_element(By.XPATH, 'p').text)
+            character_data[detail_title] = detail_body
+
+    return character_data
 
 def scrape_characters():
 
@@ -87,5 +107,7 @@ def scrape_characters():
         driver.get(character)
 
         character_data = scrape_character(driver)
+
+        print(character, character_data)
 
 scrape_characters()
