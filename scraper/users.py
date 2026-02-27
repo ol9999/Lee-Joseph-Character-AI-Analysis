@@ -23,6 +23,9 @@ def init_driver(page, signed_in=True):
     return driver
 
 def string_to_int(number):
+        
+    if len(number) == 0:
+        return 0
     
     number = number.replace(",", "")
 
@@ -128,7 +131,7 @@ def scrape_user_following(driver, max_following=10000):
 
     scrollable_div = driver.find_element(By.XPATH, '//*[@id="scrollableDiv"]/div/div')
 
-    # Scroll until you hit the bottom or reach the maximum number of following per user. I set this to 10k because the scraper gets extremely slow the longer it scrolls down the following list.
+    # Scroll until you hit the bottom or reach the maximum number of following per user. I set this to 10k because the scraper gets extremely slow the longer it scrolls down the following list. Also 10k is when they start abbreviating the following count from 9,999 to 10.0k. I cannot remember if the abbreviated following counts are rounded up or down, and if they are rounded up, then we will never reach what we think is the end of the list.
     while True:
         try:
             scrollable_div.find_element(By.XPATH, f'a[{min(following_count, max_following)}]')

@@ -24,6 +24,22 @@ def init_driver(page, signed_in=True):
     
     return driver
 
+def string_to_int(number):
+
+    if len(number) == 0:
+        return 0
+    
+    number = number.replace(",", "")
+
+    order_of_magnitude = number[-1]
+
+    if order_of_magnitude == "k":
+        return int(float(number[:-1]) * 1000)
+    elif order_of_magnitude == "m":
+        return int(float(number[:-1]) * 1000000)
+    else:
+        return int(number)
+
 def get_characters(x):
     
     # The set of characters we have already visited
@@ -102,6 +118,10 @@ def scrape_character(driver):
 
     character_data["creator"] = str(driver.find_element(By.XPATH, '//*[@id="chat-messages"]/div[2]/div/div/div/a').text)[4:]
 
+    character_data["interactions"] = string_to_int(str(driver.find_element(By.XPATH, '//*[@id="chat-details"]/div[1]/div/div[2]').text).removesuffix(" interactions"))
+
+    character_data["likes"] = string_to_int(str(driver.find_element(By.XPATH, '//*[@id="chat-details"]/div[2]/div[1]/div/button[1]').text))
+
     return character_data
 
 def scrape_characters():
@@ -120,7 +140,7 @@ def scrape_characters():
         character_data = scrape_character(driver)
 
         print()
-        print([character, character_data["creator"]])
+        print([character, character_data["interactions"], character_data["likes"]])
         print()
 
 scrape_characters()
