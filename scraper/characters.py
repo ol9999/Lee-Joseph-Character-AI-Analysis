@@ -91,6 +91,11 @@ def scrape_character(driver):
             detail_body = str(detail.find_element(By.XPATH, 'p').text)
             character_data[detail_title] = detail_body
 
+    # We need to get your username so that if it appears in the greeting, we can replace it with {{user}}
+    your_username = str(driver.find_element(By.XPATH, '/html/body/div[1]/div/main/div/div/div/aside/div/div[1]/div/div/div[3]/button/div/div[2]/div/p').text)
+
+    character_data["greeting"] = str(WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, '//*[@id="chat-messages"]/div[1]/div[1]/div/div/div[1]/div/div[1]/div[1]/div[2]/div[2]/div/div[1]'))).text).replace(your_username, "{{user}}")
+
     return character_data
 
 def scrape_characters():
@@ -108,6 +113,8 @@ def scrape_characters():
 
         character_data = scrape_character(driver)
 
+        print()
         print(character, character_data)
+        print()
 
 scrape_characters()
