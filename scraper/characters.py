@@ -96,6 +96,12 @@ def scrape_character(driver):
 
     character_data["greeting"] = str(WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, '//*[@id="chat-messages"]/div[1]/div[1]/div/div/div[1]/div/div[1]/div[1]/div[2]/div[2]/div/div[1]'))).text).replace(your_username, "{{user}}")
 
+    character_data["name"] = str(driver.find_element(By.XPATH, '//*[@id="chat-messages"]/div[2]/div/div/a[2]/p').text)
+
+    character_data["title"] = str(driver.find_element(By.XPATH, '//*[@id="chat-messages"]/div[2]/div/div/p').text)
+
+    character_data["creator"] = str(driver.find_element(By.XPATH, '//*[@id="chat-messages"]/div[2]/div/div/div/a').text)[4:]
+
     return character_data
 
 def scrape_characters():
@@ -114,7 +120,7 @@ def scrape_characters():
         character_data = scrape_character(driver)
 
         print()
-        print(character, character_data)
+        print([character, character_data["creator"]])
         print()
 
 scrape_characters()
