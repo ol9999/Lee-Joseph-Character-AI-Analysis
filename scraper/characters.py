@@ -1,5 +1,7 @@
 import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import chrome_version
 from pathlib import Path
 import os
@@ -59,6 +61,18 @@ def get_characters(x):
 
     return characters
 
+def scrape_character(driver):
+    
+    character_data = {}
+
+    # Checks for the flag and 3 dots buttons on the right side panel
+    buttons = WebDriverWait(driver, 20).until(EC.presence_of_all_elements_located((By.XPATH, '//*[@id="chat-details"]/div[2]/div[2]/child::button')))
+
+    # The flag is always there, but the 3 dots are only there if the character has a description and/or definition
+    if len(buttons) == 2:
+        buttons[1].click()
+        WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, '/html/body/div[3]/div/div/button'))).click()
+
 def scrape_characters():
 
     # The number for the intermediate files we will be using
@@ -69,6 +83,9 @@ def scrape_characters():
     driver = init_driver("https://character.ai")
 
     for character in characters:
-        pass
+        
+        driver.get(character)
+
+        character_data = scrape_character(driver)
 
 scrape_characters()
