@@ -6,6 +6,22 @@ import os
 import sys
 import jsonlines
 
+def init_driver(page, signed_in=True):
+    chrome_options = uc.ChromeOptions()
+
+    if signed_in:
+        browser_data_path = str(Path(__file__).parent / "browser_data")
+        chrome_options.add_argument("--user-data-dir=" + browser_data_path)
+    
+    chrome_version_number = int(chrome_version.get_chrome_version().split(".")[0])
+    driver = uc.Chrome(use_subprocess=True, options=chrome_options, version_main=chrome_version_number)
+    
+    # Launch page
+    driver.get(page)
+    driver.maximize_window()
+    
+    return driver
+
 def get_characters(x):
     
     # The set of characters we have already visited
@@ -50,6 +66,9 @@ def scrape_characters():
 
     characters = get_characters(x)
 
-    print(characters)
+    driver = init_driver("https://character.ai")
+
+    for character in characters:
+        pass
 
 scrape_characters()
