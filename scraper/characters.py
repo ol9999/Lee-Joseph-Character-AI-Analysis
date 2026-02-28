@@ -133,11 +133,20 @@ def scrape_characters():
 
     driver = init_driver("https://character.ai")
 
-    for character in characters:
+    while len(characters) > 0:
+
+        character = characters.pop()
         
         driver.get(character)
 
-        character_data = scrape_character(driver)
+        # Scrape the character. If we encounter an error, restart the browser and try again.
+        try:
+            character_data = scrape_character(driver)
+        except:
+            characters.add(character)
+            driver.quit()
+            driver = init_driver("https://character.ai")
+            continue
 
         # TODO: Check if the character is missing
 

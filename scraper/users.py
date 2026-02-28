@@ -198,13 +198,13 @@ def scrape_users():
     driver = init_driver("https://character.ai")
 
     while len(usernames) > 0:
-        
+
         username = usernames.pop()
         visited.add(username)
 
         driver.get(f"https://character.ai/profile/{username}")
 
-        # If we encounter an error, restart the browser and try again
+        # Scrape the user. If we encounter an error, restart the browser and try again.
         try:
             user_data = scrape_user(driver)
         except:
