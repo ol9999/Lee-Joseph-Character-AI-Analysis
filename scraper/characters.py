@@ -77,19 +77,36 @@ def get_characters(x):
 
     return characters
 
-def scrape_character(driver):
+def scrape_character(driver, moderated):
     
     character_data = {}
 
+    character_moderated = False
+
+    # Checks for the flag and 3 dots buttons on the right side panel
+    try:
+        buttons = WebDriverWait(driver, 20).until(EC.presence_of_all_elements_located((By.XPATH, '//*[@id="chat-details"]/div[2]/div[2]/child::button')))
+    except:
+        # If we find a message saying "Sorry, this Character is not available to chat", then the character is missing.
+        if str(driver.find_element(By.XPATH, '//*[@id="main-content"]/div').text) == "Sorry, this Character is not available to chat":
+            return None
+        # If we find a message saying "This character has been disabled due to a takedown request.", then the character has been moderated.
+        elif str(driver.find_element(By.XPATH, '//*[@id="chat-body"]/div[2]/div/div/div/span').text) == "This character has been disabled due to a takedown request.":
+            character_moderated = True
+        # These are the only two conditions I am aware of where we can be certain that something is wrong with a character. Otherwise, the character probably exists and it simply did not load. Refresh the browser and move on.
+        else:
+            raise Exception
+        
+    # If this character has been moderated, but we are not collecting moderated characters, mark the character as missing. Otherwise, proceed normally.
+    if character_moderated and not moderated:
+        return None
+        
     # Set description and definition to None by default
     character_data["description"] = None
     character_data["definition"] = None
 
-    # Checks for the flag and 3 dots buttons on the right side panel
-    buttons = WebDriverWait(driver, 20).until(EC.presence_of_all_elements_located((By.XPATH, '//*[@id="chat-details"]/div[2]/div[2]/child::button')))
-
     # The flag is always there, but the 3 dots are only there if the character has a description and/or definition
-    if len(buttons) == 2:
+    if (not character_moderated) and (len(buttons) == 2):
         buttons[1].click()
         WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, '/html/body/div[3]/div/div/button'))).click()
 
@@ -110,17 +127,22 @@ def scrape_character(driver):
     # We need to get your username so that if it appears in the greeting, we can replace it with {{user}}
     your_username = str(driver.find_element(By.XPATH, '/html/body/div[1]/div/main/div/div/div/aside/div/div[1]/div/div/div[3]/button/div/div[2]/div/p').text)
 
-    character_data["greeting"] = str(WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, '//*[@id="chat-messages"]/div[1]/div[1]/div/div/div[1]/div/div[1]/div[1]/div[2]/div[2]/div/div[1]'))).text).replace(your_username, "{{user}}")
-
+    # The greeting is the last part of the page to load. If it hasn't loaded within 20 seconds, assume it won't. Restart the browser and move on.
+    try:
+        character_data["greeting"] = str(WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, '//*[@id="chat-messages"]/div[1]/div[1]/div/div/div[1]/div/div[1]/div[1]/div[2]/div[2]/div/div[1]'))).text).replace(your_username, "{{user}}")
+    except:
+        raise Exception
+    
     character_data["name"] = str(driver.find_element(By.XPATH, '//*[@id="chat-messages"]/div[2]/div/div/a[2]/p').text)
 
     character_data["title"] = str(driver.find_element(By.XPATH, '//*[@id="chat-messages"]/div[2]/div/div/p').text)
 
     character_data["creator"] = str(driver.find_element(By.XPATH, '//*[@id="chat-messages"]/div[2]/div/div/div/a').text)[4:]
 
-    character_data["interactions"] = string_to_int(str(driver.find_element(By.XPATH, '//*[@id="chat-details"]/div[1]/div/div[2]').text).removesuffix(" interactions"))
+    if not character_moderated:
+        character_data["interactions"] = string_to_int(str(driver.find_element(By.XPATH, '//*[@id="chat-details"]/div[1]/div/div[2]').text).removesuffix(" interactions"))
 
-    character_data["likes"] = string_to_int(str(driver.find_element(By.XPATH, '//*[@id="chat-details"]/div[2]/div[1]/div/button[1]').text))
+        character_data["likes"] = string_to_int(str(driver.find_element(By.XPATH, '//*[@id="chat-details"]/div[2]/div[1]/div/button[1]').text))
 
     return character_data
 
@@ -128,6 +150,9 @@ def scrape_characters():
 
     # The number for the intermediate files we will be using
     x = sys.argv[1]
+
+    # Whether we will collect moderated characters
+    moderated = (len(sys.argv) == 3) and (sys.argv[2] == "moderated")
 
     characters = get_characters(x)
 
@@ -141,7 +166,7 @@ def scrape_characters():
 
         # Scrape the character. If we encounter an error, restart the browser and try again.
         try:
-            character_data = scrape_character(driver)
+            character_data = scrape_character(driver, moderated)
         except:
             characters.add(character)
             driver.quit()
@@ -149,7 +174,10 @@ def scrape_characters():
             continue
 
         # TODO: Check if the character is missing
-
+        if type(character_data) != dict:
+            print(f"{character} is missing")
+            continue
+        
         # Add this character to the dataset
         characters_jsonl_path = str(Path(__file__).parent.parent / "data" / f"characters_{x}.jsonl")
         with jsonlines.open(characters_jsonl_path, mode="a") as writer:
