@@ -204,7 +204,15 @@ def scrape_users():
 
         driver.get(f"https://character.ai/profile/{username}")
 
-        user_data = scrape_user(driver)
+        # If we encounter an error, restart the browser and try again
+        try:
+            user_data = scrape_user(driver)
+        except:
+            usernames.add(username)
+            visited.discard(username)
+            driver.quit()
+            driver = init_driver("https://character.ai")
+            continue
 
         # If this user is missing, document that and move on
         if type(user_data) != dict:
@@ -216,7 +224,7 @@ def scrape_users():
         if snowball:
             usernames.update(user_data["following"] - visited)
 
-        # Save this user's data to the file
+        # Add this user to the dataset
         users_jsonl_path = str(Path(__file__).parent.parent / "data" / f"users_{x}.jsonl")
         with jsonlines.open(users_jsonl_path, mode="a") as writer:
             line = [
@@ -230,11 +238,5 @@ def scrape_users():
                 list(user_data["following"])
             ]
             writer.write(line)
-
-# If we run into an error, print it and try again
-while True:
-    try:
-        scrape_users()
-        break
-    except Exception as err:
-        print(err)
+        
+scrape_users()

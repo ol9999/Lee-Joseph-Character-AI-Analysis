@@ -139,8 +139,22 @@ def scrape_characters():
 
         character_data = scrape_character(driver)
 
-        print()
-        print([character, character_data["interactions"], character_data["likes"]])
-        print()
+        # TODO: Check if the character is missing
+
+        # Add this character to the dataset
+        characters_jsonl_path = str(Path(__file__).parent.parent / "data" / f"characters_{x}.jsonl")
+        with jsonlines.open(characters_jsonl_path, mode="a") as writer:
+            line = [
+                character,
+                character_data["creator"],
+                character_data["interactions"],
+                character_data["likes"],
+                character_data["name"],
+                character_data["title"],
+                character_data["greeting"],
+                character_data["description"],
+                character_data["definition"],
+            ]
+            writer.write(line)
 
 scrape_characters()
