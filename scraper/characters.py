@@ -85,7 +85,7 @@ def scrape_character(driver, moderated):
 
     # Checks for the flag and 3 dots buttons on the right side panel
     try:
-        buttons = WebDriverWait(driver, 20).until(EC.presence_of_all_elements_located((By.XPATH, '//*[@id="chat-details"]/div[2]/div[2]/child::button')))
+        buttons = WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located((By.XPATH, '//*[@id="chat-details"]/div[2]/div[2]/child::button')))
     except:
         # If we find a message saying "Sorry, this Character is not available to chat", then the character is missing.
         if str(driver.find_element(By.XPATH, '//*[@id="main-content"]/div').text) == "Sorry, this Character is not available to chat":
@@ -139,6 +139,10 @@ def scrape_character(driver, moderated):
 
     character_data["creator"] = str(driver.find_element(By.XPATH, '//*[@id="chat-messages"]/div[2]/div/div/div/a').text)[4:]
 
+    # Set interactions and likes to None by default. The only case that I am aware of where they will remain None is if the character has been moderated.
+    character_data["interactions"] = None
+    character_data["likes"] = None
+
     if not character_moderated:
         character_data["interactions"] = string_to_int(str(driver.find_element(By.XPATH, '//*[@id="chat-details"]/div[1]/div/div[2]').text).removesuffix(" interactions"))
 
@@ -173,9 +177,11 @@ def scrape_characters():
             driver = init_driver("https://character.ai")
             continue
 
-        # TODO: Check if the character is missing
+        # If this character is missing, document that and move on
         if type(character_data) != dict:
-            print(f"{character} is missing")
+            missing_characters_path = str(Path(__file__).parent.parent / "data" / f"missing_characters_{x}.txt")
+            with open(missing_characters_path, mode="a") as writer:
+                writer.write(character + "\n")
             continue
         
         # Add this character to the dataset
