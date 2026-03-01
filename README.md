@@ -9,9 +9,12 @@ When setting up your environment, use Python 3.10 because `undetected_chromedriv
 
 The first thing you need to do after cloning this repo and setting up your environment is to run `scraper/authenticate.py` and log into your Character.AI account. Close the browser when you are done. From now on, you will remain logged in any time the scraper launches. Your browser data will be saved in `scraper/browser_data`. This script should have also created a new directory called `data`. It is safe to run this script whenever you want.
 
+### Scraping the Homepage
 
+To scrape the homepage, run `scraper/homepage.py`. This will make a new file called `data/homepage.txt`, which is the set of usernames found on the homepage. Be aware that if this file already exists, the script will overwrite it. Because the homepage of Character.AI has changed over time, this code is slightly different than what I originally used. For example, you used to be able to see this page without an account, meaning you could see the "For you" section without it being biased to your account activity. [^1]
 
-- to scrape the homepage, run scraper/homepage.py
+[^1]: skibidi
+
 - this will make a new file called "homepage.txt" in the data folder, and it is the set of usernames scraped from the homepage.
 - This code is slightly different than what we used for our paper due to site updates. Before, you could visit the homepage without signing in, and so in this state, "for you" was not affected by any account activity that could influence the recommendation algorithm. This is not true anymore, and they also added a couple more rows called "popular" and "trending". Also the categories at the bottom have been updated since then.
 - This code only uses the Featured, Popular, Trending, and the different categories at the bottom (e.g. anime, assistant, creative, etc.). If you want to use anything else like from Try These or Try Saying, feel free to do that manually because that's what we did.
