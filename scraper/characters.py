@@ -127,17 +127,19 @@ def scrape_character(driver, moderated):
     # We need to get your username so that if it appears in the greeting, we can replace it with {{user}}
     your_username = str(driver.find_element(By.XPATH, '/html/body/div[1]/div/main/div/div/div/aside/div/div[1]/div/div/div[3]/button/div/div[2]/div/p').text)
 
-    # The greeting is the last part of the page to load. If it hasn't loaded within 20 seconds, assume it won't. Restart the browser and move on.
+    # The play button that reads the greeting aloud is the last element that loads on the page. Once it exists, we can safely scrape the rest of the character. If it hasn't loaded within 20 seconds, assume it won't. Restart the browser and move on.
     try:
-        character_data["greeting"] = str(WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, '//*[@id="chat-messages"]/div[1]/div[1]/div/div/div[1]/div/div[1]/div[1]/div[2]/div[2]/div/div[1]'))).text).replace(your_username, "{{user}}")
+        WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, '//button[@aria-label="Play voice"]')))
     except:
         raise Exception
+
+    character_data["greeting"] = str(driver.find_element(By.XPATH, '//*[contains(@class, "prose")]').get_attribute("textContent")).replace(your_username, "{{user}}")
     
-    character_data["name"] = str(driver.find_element(By.XPATH, '//*[@id="chat-messages"]/div[2]/div/div/a[2]/p').text)
+    character_data["name"] = str(driver.find_element(By.XPATH, '//*[@id="chat-messages"]/div[2]/div/div/a[2]/p').get_attribute("textContent"))
 
-    character_data["title"] = str(driver.find_element(By.XPATH, '//*[@id="chat-messages"]/div[2]/div/div/p').text)
+    character_data["title"] = str(driver.find_element(By.XPATH, '//*[@id="chat-messages"]/div[2]/div/div/p').get_attribute("textContent"))
 
-    character_data["creator"] = str(driver.find_element(By.XPATH, '//*[@id="chat-messages"]/div[2]/div/div/div/a').text)[4:]
+    character_data["creator"] = str(driver.find_element(By.XPATH, '//*[@id="chat-messages"]/div[2]/div/div/div/a').get_attribute("textContent"))[4:]
 
     # Set interactions and likes to None by default. The only case that I am aware of where they will remain None is if the character has been moderated.
     character_data["interactions"] = None
