@@ -23,6 +23,9 @@ def init_driver(page, signed_in=True):
     return driver
 
 def string_to_int(number):
+        
+    if len(number) == 0:
+        return 0
     
     number = number.replace(",", "")
 
@@ -128,7 +131,7 @@ def scrape_user_following(driver, max_following=10000):
 
     scrollable_div = driver.find_element(By.XPATH, '//*[@id="scrollableDiv"]/div/div')
 
-    # Scroll until you hit the bottom or reach the maximum number of following per user. I set this to 10k because the scraper gets extremely slow the longer it scrolls down the following list.
+    # Scroll until you hit the bottom or reach the maximum number of following per user. I set this to 10k because the scraper gets extremely slow the longer it scrolls down the following list. Also 10k is when they start abbreviating the following count from 9,999 to 10.0k. I cannot remember if the abbreviated following counts are rounded up or down, and if they are rounded up, then we will never reach what we think is the end of the list.
     while True:
         try:
             scrollable_div.find_element(By.XPATH, f'a[{min(following_count, max_following)}]')
@@ -195,13 +198,21 @@ def scrape_users():
     driver = init_driver("https://character.ai")
 
     while len(usernames) > 0:
-        
+
         username = usernames.pop()
         visited.add(username)
 
         driver.get(f"https://character.ai/profile/{username}")
 
-        user_data = scrape_user(driver)
+        # Scrape the user. If we encounter an error, restart the browser and try again.
+        try:
+            user_data = scrape_user(driver)
+        except:
+            usernames.add(username)
+            visited.discard(username)
+            driver.quit()
+            driver = init_driver("https://character.ai")
+            continue
 
         # If this user is missing, document that and move on
         if type(user_data) != dict:
@@ -213,7 +224,7 @@ def scrape_users():
         if snowball:
             usernames.update(user_data["following"] - visited)
 
-        # Save this user's data to the file
+        # Add this user to the dataset
         users_jsonl_path = str(Path(__file__).parent.parent / "data" / f"users_{x}.jsonl")
         with jsonlines.open(users_jsonl_path, mode="a") as writer:
             line = [
@@ -227,11 +238,5 @@ def scrape_users():
                 list(user_data["following"])
             ]
             writer.write(line)
-
-# If we run into an error, print it and try again
-while True:
-    try:
-        scrape_users()
-        break
-    except Exception as err:
-        print(err)
+        
+scrape_users()
