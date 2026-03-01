@@ -30,6 +30,19 @@ The provided code enables you to scrape in parallel between multiple computers. 
 | `data/missing_users_[NUMBER].txt` | Several partial lists of missing users. Each is collected by an instance of the scraper, and each is identified by a number in the filename |
 | `data/scraped_users.txt` | The full list of usernames we have already scraped. |
 
+Your central dataset of scraped users will be saved in `data/users.jsonl`. This is a [jsonlines](https://jsonlines.org/) file, where each line is a JSON array. Its format is as follows:
+
+| Column | Field | Type |
+| --- | --- | --- |
+| 0 | Username | String |
+| 1 | Display Name | String |
+| 2 | Follower Count | Integer |
+| 3 | Following Count | Integer |
+| 4 | Interactions | Integer |
+| 5 | Bio | String |
+| 6 | Characters | Array |
+| 7 | Following | Array |
+
 **Step 1:** Run `scraper/split_users.py` to create lists of users to scrape next. This script will read from `data/homepage.txt`, `data/users.jsonl`, and `data/missing_users.txt`. The latter two files will not exist the first time you run this script; that is ok. This script takes one mandatory command-line argument, an integer specifying how many lists of usernames to make. For example, this would be the result of running `python scraper/split_users.py 5`:
 
 | Input Files | Output Files |
