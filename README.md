@@ -1,11 +1,16 @@
 # Lee-Joseph-Character-AI-Analysis
-A Large-Scale Analysis of Public-Facing, Community-Built Chatbots on Character.AI: Code Release
+Welcome to the code release for [_A Large-Scale Analysis of Public-Facing, Community-Built Chatbots on Character.AI_](https://arxiv.org/abs/2505.13354) by Owen Lee and Kenneth Joseph.
 
-instructions for scraping:
-- use Python 3.10.6. undetected_chromedriver will not work in newer version of Python
-- first, create a Character.AI account
-- after cloning the repo, you first want to run scraper/authenticate.py. Log into your account. Now, you will remain logged in any time the scraper launches.
-- you will find that this script also created a new folder called "data"
+## Using the Scraper
+
+### Preparation
+
+When setting up your environment, use Python 3.10 because `undetected_chromedriver` does not work with the newest versions of Python.
+
+The first thing you need to do after cloning this repo and setting up your environment is to run `scraper/authenticate.py` and log into your Character.AI account. Close the browser when you are done. From now on, you will remain logged in any time the scraper launches. Your browser data will be saved in `scraper/browser_data`. This script should have also created a new directory called `data`. It is safe to run this script whenever you want.
+
+
+
 - to scrape the homepage, run scraper/homepage.py
 - this will make a new file called "homepage.txt" in the data folder, and it is the set of usernames scraped from the homepage.
 - This code is slightly different than what we used for our paper due to site updates. Before, you could visit the homepage without signing in, and so in this state, "for you" was not affected by any account activity that could influence the recommendation algorithm. This is not true anymore, and they also added a couple more rows called "popular" and "trending". Also the categories at the bottom have been updated since then.
