@@ -11,13 +11,13 @@ The first thing you need to do after cloning this repo and setting up your envir
 
 ### Scraping the Homepage
 
-To scrape the homepage, run `scraper/homepage.py`. This will make a new file called `data/homepage.txt`, which is the set of usernames found on the homepage. Be aware that if this file already exists, the script will overwrite it. Because the homepage of Character.AI has changed over time, this code is slightly different than what I originally used. For example, you used to be able to see this page without an account, meaning you could see the "For you" section without it being biased to your account activity. [^1]
+To scrape the homepage, run `scraper/homepage.py`. This will make a new file called `data/homepage.txt`, which is the set of usernames found on the homepage. Be aware that if this file already exists, the script will overwrite it. If this script is working properly, you will see it click on each of the categories (e.g. "Anime", "Assistant", "Creative").
 
-[^1]: skibidi
+This code has been slightly modified from my original code to address site updates. For example, you used to be able to view the homepage without an account, meaning you could see the "For you" section without its contents being biased to your account activity. This iteration of the code only collects usernames from the "Featured", "Popular", and "Trending" sections, in addition to the aforementioned genre categories (e.g. "Anime"). If you wish to collect usernames from elsewhere on the homepage (e.g. "Try these" or "Try saying"), feel free to add them manually to `data/homepage.txt` because that is what we did.
 
-- this will make a new file called "homepage.txt" in the data folder, and it is the set of usernames scraped from the homepage.
-- This code is slightly different than what we used for our paper due to site updates. Before, you could visit the homepage without signing in, and so in this state, "for you" was not affected by any account activity that could influence the recommendation algorithm. This is not true anymore, and they also added a couple more rows called "popular" and "trending". Also the categories at the bottom have been updated since then.
-- This code only uses the Featured, Popular, Trending, and the different categories at the bottom (e.g. anime, assistant, creative, etc.). If you want to use anything else like from Try These or Try Saying, feel free to do that manually because that's what we did.
+
+
+
 - Before you are able to start scraping users, you need to have run authenticate.py and homepage.py. Then, run split_users.py. This will take one command line argument, an integer, which is the number of lists of usernames to make. The script will create files called usernames_0.txt, ..., usernames_n-1.txt, depending on how many files you specify. There will be no duplicates between the lists, and the lists will not contain any usernames for any users you have already scraped.
 - You are now ready to start scraping user profiles. Run users.py. It takes one mandatory and one optional command line argument. The first is the number of the file to scrape from. For example, if you want to scrape from usernames_5.txt, run users.py 5. The second will make the script continue to scrape users beyond the initial list. If you want to do that, pass "snowball" as the second command line argument, i.e. run user.py 5 snowball.
 - When you are done with this round of scraping, get all of your data files onto one machine and run merge_users.py. This will append all of your new data to users.jsonl and missing_users.txt. It will also create scraped_users.txt, which is a list of all currently scraped users, which you can put in the data directory in future scraping rounds if you are doing snowball sampling.
