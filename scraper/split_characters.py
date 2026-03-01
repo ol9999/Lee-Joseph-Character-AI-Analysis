@@ -32,7 +32,7 @@ if os.path.exists(missing_characters_path):
         for line in reader:
             visited.add(line.strip())
 
-# Add all scraped users to visited set
+# Gather set of characters to scrape
 users_jsonl_path = str(Path(__file__).parent.parent / "data" / "users.jsonl")
 if os.path.exists(users_jsonl_path):
     with jsonlines.open(users_jsonl_path) as reader:

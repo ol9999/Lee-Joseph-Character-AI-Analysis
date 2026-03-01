@@ -27,6 +27,14 @@ Here is a guide to the various data files that will be created during this step:
 
 You can use one or more computers to scrape users. Whether you are using one computer or multiple, you need to run `scraper/split_users.py` to create lists of users to scrape. This script will read from `data/users.jsonl` and `data/missing_users.txt` to find users we have already visited (if this is your first round of scraping, these files will not exist yet and that is ok). The script will then read from `data/homepage.txt` and the Following column from `data/users.jsonl` to find users to scrape, excluding the ones we have already visited. This script takes one mandatory command-line argument, an integer specifying how many lists of usernames to make. This should probably be the same as the number of computers you will be using to scrape. For example, if you are using 3 computers, run `python scraper/split_users.py 3`, which will create `data/usernames_0.txt`, `data/usernames_1.txt`, and `data/usernames_2.txt`.
 
+| Input Files | Output Files |
+| --- | --- |
+| `data/homepage.txt` | `data/usernames_0.txt` |
+| `data/users.jsonl` | `data/usernames_1.txt` |
+| `data/missing_users.txt` | `data/usernames_2.txt` |
+|  | `data/usernames_3.txt` |
+|  | `data/usernames_4.txt` |
+
 Now you are ready to start scraping user profiles. To do so, keep track of which computers will scrape which lists. Clone the repo on each of your computers and sign in using `scraper/authenticate.py`. You should use different accounts for each instance of the scraper because you might be ratelimited otherwise. Transfer the specific list of usernames to scrape onto its respective computer into the `data` directory.
 
 Run `scraper/users.py` to start scraping users. This script takes one mandatory and one optional command-line argument. The first is an integer specifying which list to scrape from. For example, if you want this computer to scrape from `data/usernames_0.txt`, run `python scraper/users.py 0`. The second is a keyword `snowball`. If you include this second argument, i.e. you run `python scraper/users.py 0 snowball`, this instance of the scraper will continue scraping beyond the provided list by visiting usernames found in the Following section of each user. There is no reason not to do this if you are only using one computer, but if you are using multiple computers, you could end up scraping duplicates. Ideally, the computers would be able to read to and write from a central database, but the provided code does not do this. This script will create the file `data/users_{x}.jsonl` and `data/missing_users_{x}.txt`, where `x` is the first command line argument and the same number as the list of usernames it is reading from. The former is the dataset of users scraped from this instance of the scraper, and the latter is the list of users that are stale for some reason, having either been deleted, their username changed, etc. You will know that this script is done when it terminates without your interference and without raising an error.
@@ -34,6 +42,18 @@ Run `scraper/users.py` to start scraping users. This script takes one mandatory 
 When you are done with a round of scraping, put all data files `data/users_{x}.jsonl` and `data/missing_users_{x}.txt` onto one machine. It's ok if not every computer is done, any users not yet visited will just be included in the next batch of username lists. Now, run `scraper/merge_users.py`. This takes one mandatory command-line argument, an integer, which is the number of machines you are merging from. This must be greater than the highest `x` in the filenames. Otherwise, it will not merge all of your data but you wouldn't know because it doesn't raise an error. This will append all of your new data to `data/users.jsonl` and `data/missing_users.txt`, creating them if they do not already exist. It will also create `data/scraped_users.txt`, which is a list of all scraped usernames. If you are running any instances of the scraper with `snowball` enabled, you should put the updated `data/missing_users.txt` and `data/scraped_users.txt` in the `data` directory on the respective computers.
 
 Repeat these steps starting from running `scraper/split_users.py`. Stop when you are satisfied with your sample.
+
+### Scraping Characters
+
+Here is a guide to the various data files that will be created during this step:
+
+| Filename | Description |
+| --- | --- |
+| `data/characters.jsonl` | The central dataset of users you have scraped. More about the format of this file later. |
+| `data/missing_characters.txt` | The central list of characters we have found to be missing. |
+| `data/characters_{x}.txt` | Several lists of characters to scrape, each identified by an integer in place of `{x}` in the filename |
+| `data/characters_{x}.jsonl` | Several datasets of scraped characters for each instance of the scraper, each identified by an integer in place of `{x}` in the filename. |
+| `data/missing_characters_{x}.txt` | Several lists of characters found to be missing for each instance of the scraper, each identified by an integer in place of `{x}` in the filename. |
 
 
 - Now we will prepare to scrape characters. Run scraper/split_characters.py. It takes two command line arguments. The first is an int that specifies the number of lists to make. The second is optional, and it places a limit on the number of characters per user to scrape. If you have already started scraping some characters, it will use data from characters.jsonl to make sure you do not scrape beyond the limit you set. This will output files characters_x.txt.
