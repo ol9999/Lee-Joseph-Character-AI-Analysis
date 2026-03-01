@@ -18,3 +18,4 @@ instructions for scraping:
 - When you scrape characters, it is very important that you are not using an account where you have changed your display name.
 - You must be zoomed out enough for the panel on the right to be visible automatically! (can I include an image?)
 - To scrape characters, run characters.py. It takes two command line arguments. The first is the file number, and the second is "moderated" which will include moderate characters in our data.
+- To merge characters, run merge_characters.py. This works the exact same way as merge_users.py. It takes one command line argument, the number of files to merge.
