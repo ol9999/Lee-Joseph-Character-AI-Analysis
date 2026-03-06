@@ -1,5 +1,10 @@
-# Lee-Joseph-Character-AI-Analysis
+# Character.AI Scraper and Analysis Code by Owen Lee and Kenneth Joseph
+
 Welcome to the code release for [_A Large-Scale Analysis of Public-Facing, Community-Built Chatbots on Character.AI_](https://arxiv.org/abs/2505.13354) by Owen Lee and Kenneth Joseph.
+
+## The Dataset
+
+Please email the lead author for the dataset. For more information, see [data/DATASET.md](data/DATASET.md).
 
 ## Using the Scraper
 
@@ -43,7 +48,7 @@ Your central dataset of scraped users will be saved in `data/users.jsonl`. This 
 | 6 | Characters | Array |
 | 7 | Following | Array |
 
-**Step 1:** Run `scraper/split_users.py` to create lists of users to scrape next. This script will read from `data/homepage.txt`, `data/users.jsonl`, and `data/missing_users.txt`. The latter two files will not exist the first time you run this script; that is ok. This script takes one mandatory command-line argument, an integer specifying how many lists of usernames to make. For example, this would be the result of running `python scraper/split_users.py 5`:
+**Step 1:** Run `scraper/split_users.py` to create lists of users to scrape next. This script will read from `data/homepage.txt`, `data/users.jsonl`, and `data/missing_users.txt`. If the latter two files do not exist the first time you run this script, that is ok. This script takes one mandatory command-line argument, an integer specifying how many lists of usernames to make. For example, this would be the result of running `python scraper/split_users.py 5`:
 
 | Input Files | Output Files |
 | --- | --- |
@@ -114,7 +119,7 @@ Your central dataset of scraped characters will be saved in `data/characters.jso
 | 7 | Description | String |
 | 8 | Definition | String |
 
-**Step 1:** Run `scraper/split_characters.py` to create lists of characters to scrape next. This script will read from `data/users.jsonl`, `data/characters.jsonl`, and `data/missing_characters.txt`. The latter two files will not exist the first time you run this script; that is ok. This script takes one mandatory and one optional command-line argument:
+**Step 1:** Run `scraper/split_characters.py` to create lists of characters to scrape next. This script will read from `data/users.jsonl`, `data/characters.jsonl`, and `data/missing_characters.txt`. If the latter two files do not exist the first time you run this script, that is ok. This script takes one mandatory and one optional command-line argument:
 
 1. An integer specifying how many lists of characters to make. For example, if you want to make 3 lists of characters, run `python scraper/split_characters.py 3`.
 2. (Optional) An integer specifying the maximum number of characters you wish to scrape per user. For example, if you only want to scrape 5 characters per user, run `python scraper/split_characters.py 3 5`. If you have already begun scraping characters, the script will read from `data/characters.jsonl` to ensure that you do not scrape beyond the limit you set.

@@ -1,3 +1,4 @@
 scraper/browser_data
-data
+data/*.jsonl
+data/*.txt
 .vscode
