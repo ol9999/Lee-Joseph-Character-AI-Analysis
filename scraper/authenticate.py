@@ -1,13 +1,7 @@
 import undetected_chromedriver as uc
 import chrome_version
 from pathlib import Path
-import os
 import time
-
-dataset_path = str(Path(__file__).parent.parent / "data")
-
-if not os.path.exists(dataset_path):
-    os.mkdir(dataset_path)
 
 chrome_options = uc.ChromeOptions()
 
